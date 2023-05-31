@@ -1,26 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class StudentsService {
-  create(createStudentDto: CreateStudentDto) {
-    return 'This action adds a new student';
+
+  constructor( private prisma:PrismaService){}
+  async create(createStudentDto: CreateStudentDto) {
+   const newStudent=await this.prisma.student.findUnique({where:{dni:createStudentDto.dni}});
+   if(newStudent){
+    throw new HttpException('ya existe un usuario con ese dni ',505)
+   }else{
+    return this.prisma.student.create({data:createStudentDto})
+   }
   }
 
-  findAll() {
-    return `This action returns all students`;
+  async findAll() {
+    const student=await this.prisma.student.findMany();
+    if(student.length==0){
+      throw new HttpException('todavia no hay estudiantes registrados',505);
+    }else{
+      return student;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} student`;
+  async findOne(id: number) {
+    const student=await this.prisma.student.findUnique({where:{id:id}})
+    if(student){
+      return student;
+    }else{
+      throw new HttpException('no existe el estudiante',404);
+    }
   }
 
-  update(id: number, updateStudentDto: UpdateStudentDto) {
-    return `This action updates a #${id} student`;
+  async update(id: number, updateStudentDto: UpdateStudentDto) {
+    const student=await this.prisma.student.findUnique({where:{id:id}})
+    if(student){
+      return this.prisma.student.update({where:{id},data:updateStudentDto});
+    }else{
+      throw new HttpException('no existe el estudiante',404);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} student`;
+  async remove(id: number) {
+    const student=await this.prisma.student.findUnique({where:{id:id}})
+    if(student){
+      return this.prisma.student.delete({where:{id:id}})
+    }else{
+      throw new HttpException('no existe el estudiante',404);
+    }
   }
 }
