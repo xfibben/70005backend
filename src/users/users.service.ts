@@ -1,18 +1,47 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable,HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import {hash,compare} from 'bcrypt';
+import {JwtService} from '@nestjs/jwt'
+import {find} from "rxjs";
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma:PrismaService){}
-  async create(createUserDto: CreateUserDto) {
-    const userFound=await this.prisma.user.findUnique({where:{username:createUserDto.username}});
-    if(userFound){
-      throw new HttpException('el nombre de usuario ya existe',505);
-    }else{
-      return this.prisma.user.create({data:createUserDto})
+  constructor(private prisma:PrismaService,private jwtService:JwtService){}
+  async registerUser(createUserDto: CreateUserDto) {
+    const {username,password}=createUserDto;
+    const plainToHash=await hash(password,10);
+    createUserDto={...createUserDto,password:plainToHash};
+    return this.prisma.user.create({data:createUserDto})
+
+  }
+
+  async loginUser(createUserDto:CreateUserDto){
+    const {username,password}=createUserDto
+    const userFound=await this.prisma.user.findUnique({where:{username: username}})
+    if(!userFound){
+      throw new HttpException('Usuario no encontrado',404)
     }
+    const checkPassword= await compare(password,userFound.password);
+
+    if(!checkPassword){
+      throw new HttpException('Contraseña incorrecta',403);
+    }
+    const payload = {id:userFound.id,username:userFound.username}
+    const token=await this.jwtService.sign(payload)
+    const data={
+      user:userFound,
+      token
+    }
+    return data
+
+
+
+
+
+
+
   }
 
   async findAll() {
@@ -29,7 +58,7 @@ export class UsersService {
     if(userFound){
       return userFound;
     }else{
-      throw new HttpException(`no existe el usuario ${username} `,404);
+      throw new HttpException(`no existe el usuario ${username} `,HttpStatus.NOT_FOUND);
     }
   }
   
@@ -37,7 +66,7 @@ export class UsersService {
   async update(username:string, updateUserDto: UpdateUserDto) {
     const userFound=await this.prisma.user.findUnique({where:{username:username}});
     if(!userFound){
-      throw new HttpException('no existe el usuario',404);
+      throw new HttpException('no existe el usuario',HttpStatus.FORBIDDEN);
     }else{
       return this.prisma.user.update({where:{username:username},data:updateUserDto})
       
