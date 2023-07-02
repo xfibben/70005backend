@@ -37,6 +37,7 @@ export class UsersController {
     return this.usersService.update(username, updateUserDto);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':username')
   remove(@Param('username') username:string) {
     return this.usersService.remove(username);

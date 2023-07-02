@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `student` MODIFY `dni` INTEGER NOT NULL DEFAULT 0;

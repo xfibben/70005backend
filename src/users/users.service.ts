@@ -10,6 +10,12 @@ import {find} from "rxjs";
 export class UsersService {
   constructor(private prisma:PrismaService,private jwtService:JwtService){}
   async registerUser(createUserDto: CreateUserDto) {
+
+    const userFound=await this.prisma.user.findUnique({where:{username:createUserDto.username}})
+    if(userFound){
+      throw new HttpException('el nombre de usuario ya es usado por otra cuenta',HttpStatus.CONFLICT)
+    }
+
     const {username,password}=createUserDto;
     const plainToHash=await hash(password,10);
     createUserDto={...createUserDto,password:plainToHash};
@@ -73,7 +79,15 @@ export class UsersService {
     }
   }
 
-  remove(username:string) {
-    return this.prisma.user.delete({where:{username:username}})
+  async remove(username:string) {
+
+    const userFound=await this.prisma.user.findUnique({where:{username:username}})
+    if(!userFound){
+      throw new HttpException('No existe el usuario',HttpStatus.NOT_FOUND)
+    }
+
+
+     this.prisma.user.delete({where:{username:username}})
+     return 'eliminado correctamente'
   }
 }
