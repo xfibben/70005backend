@@ -90,4 +90,14 @@ export class UsersService {
      this.prisma.user.delete({where:{username:username}})
      return 'eliminado correctamente'
   }
+
+  async logout(token:string){
+
+    const tokenVerify= await this.jwtService.verifyAsync(token);
+
+    return tokenVerify;
+
+  }
 }
+
+

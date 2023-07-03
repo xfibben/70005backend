@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request} from '@nestjs/common';
+import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Headers} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -41,5 +41,13 @@ export class UsersController {
   @Delete(':username')
   remove(@Param('username') username:string) {
     return this.usersService.remove(username);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('logout')
+  async logout(@Headers('Authorization') authorization:string){
+    const token = authorization.replace('Bearer ', '');
+    await this.usersService.logout(token)
+    return { message: 'Logout exitoso' };
   }
 }
