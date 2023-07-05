@@ -3,7 +3,7 @@ import {ApiProperty,} from "@nestjs/swagger";
 
 export class CreateStudentDto{
     @ApiProperty({type:String})
-    dni:number
+    dni:string
     @ApiProperty({type:String})
     nombres:string
     @ApiProperty({type:String})
