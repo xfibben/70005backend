@@ -21,7 +21,7 @@ model User{
 
 model Student{
   id Int @id @default(autoincrement())
-  dni Int @unique
+  dni String @unique
   nombres String
   apellidos String
   colegio Colegio @relation(fields: [colegioId] ,references: [id])
