@@ -10,73 +10,68 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-model User{
-  id Int @id @default(autoincrement())
-  username String @unique 
-  password String 
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model Student{
-  id Int @id @default(autoincrement())
-  dni String @unique
-  nombres String
+model Student {
+  id        Int                 @id @default(autoincrement())
+  dni       String              @unique
+  nombres   String
   apellidos String
-  colegio Colegio @relation(fields: [colegioId] ,references: [id])
+  colegio   Colegio             @relation(fields: [colegioId], references: [id])
   colegioId Int
-  precio Int @default(0)
-  pagado Boolean @default(false)
-  concurso StudentOnConcurso[]
-  prueba StudentOnPrueba[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  grado     Int
+  precio    Int                 @default(0)
+  pagado    Boolean             @default(false)
+  concurso  StudentOnConcurso[]
+  prueba    StudentOnPrueba[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @default(now()) @updatedAt
 }
 
-model Colegio{
-  id Int @id @default(autoincrement())
-  name String
+model Colegio {
+  id       Int       @id @default(autoincrement())
+  name     String
   students Student[]
-
-
 }
-
 
 model Concurso {
-  id Int @id @default(autoincrement())
-  name String
-  student StudentOnConcurso[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  prueba Prueba?
-
-
+  id        Int                 @id @default(autoincrement())
+  name      String
+  student   StudentOnConcurso[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @default(now()) @updatedAt
+  prueba    Prueba?
 }
 
-model Prueba{
-  id Int @id   @default(autoincrement())
-  concurso Concurso @relation(fields: [concursoId],references: [id])
-  concursoId Int @unique
-  student StudentOnPrueba[]
-  nota Int
-
+model Prueba {
+  id          Int               @id @default(autoincrement())
+  concurso    Concurso          @relation(fields: [concursoId], references: [id])
+  concursoId  Int               @unique
+  student     StudentOnPrueba[]
+  nota        Int
+  horaEntrega DateTime
 }
 
-model StudentOnPrueba{
+model StudentOnPrueba {
   studentId Int
-  pruebaId Int
-  student Student @relation(fields: [studentId],references: [id])
-  prueba Prueba @relation(fields: [pruebaId],references: [id])
+  pruebaId  Int
+  student   Student @relation(fields: [studentId], references: [id])
+  prueba    Prueba  @relation(fields: [pruebaId], references: [id])
 
-  @@id([pruebaId,studentId])
+  @@id([pruebaId, studentId])
 }
 
-model StudentOnConcurso{
-  studentId Int
+model StudentOnConcurso {
+  studentId  Int
   concursoId Int
-  student Student @relation(fields: [studentId] ,references: [id])
-  concurso Concurso @relation(fields: [concursoId],references: [id])
+  student    Student  @relation(fields: [studentId], references: [id])
+  concurso   Concurso @relation(fields: [concursoId], references: [id])
 
-  @@id([studentId,concursoId])
+  @@id([studentId, concursoId])
 }

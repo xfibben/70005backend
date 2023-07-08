@@ -1,1 +1,1 @@
-export const jwtConstants='holabb';
+export const jwtConstants = 'holabb';

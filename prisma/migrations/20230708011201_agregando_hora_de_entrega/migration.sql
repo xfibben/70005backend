@@ -49,6 +49,7 @@ CREATE TABLE `Prueba` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `concursoId` INTEGER NOT NULL,
     `nota` INTEGER NOT NULL,
+    `horaEntrega` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `Prueba_concursoId_key`(`concursoId`),
     PRIMARY KEY (`id`)
