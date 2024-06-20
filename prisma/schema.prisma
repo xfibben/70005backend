@@ -13,6 +13,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum level {
+  Inicial
+  Primaria
+  Secundaria
+}
+
 model User{
   id Int @default(autoincrement()) @id
   username String @unique
@@ -26,9 +32,20 @@ model Student{
   name String
   lastName String
   email String?
-  school School? @relation(fields: [schoolId], references: [id])
-  schoolId Int?
+  dni String @unique
+  school School @relation(fields: [schoolId], references: [id])
+  schoolId Int
+  grade Grade? @relation(fields: [gradeId], references: [id])
+  gradeId Int
   qualifications Qualification[]
+}
+
+model Grade{
+  id Int @default(autoincrement()) @id
+  grade Float
+  level level
+  students Student[]
+  Test Test[]
 }
 
 model School{
@@ -46,6 +63,8 @@ model Test{
   time Float
   date DateTime
   qualifications Qualification[]
+  grade Grade @relation(fields: [gradeId], references: [id])
+  gradeId Int
 }
 
 model Qualification{
@@ -54,5 +73,5 @@ model Qualification{
   studentId Int
   test Test @relation(fields: [testId], references: [id])
   testId Int
-  grade Float
+  
 }

@@ -11,3 +11,4 @@ export interface EditUserDto{
     name?:string
     password?:string
 }
+
