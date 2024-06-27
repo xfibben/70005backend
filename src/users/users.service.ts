@@ -56,4 +56,15 @@ export class UsersService {
             throw error;
         }
     };
+
+    async deleteUser(username:string){
+        try{
+            const deletedUser = await this.prisma.user.delete({
+                where:{username}
+            })
+            return deletedUser;
+        }catch(error){
+            throw error;
+        }
+    }
 }

@@ -25,6 +25,8 @@ model User{
   password String
   name String
   email String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 model Student{
@@ -38,6 +40,8 @@ model Student{
   grade Grade? @relation(fields: [gradeId], references: [id])
   gradeId Int
   qualifications Qualification[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 model Grade{
@@ -46,6 +50,8 @@ model Grade{
   level level
   students Student[]
   Test Test[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 model School{
@@ -55,16 +61,31 @@ model School{
   phone String?
   email String?
   students Student[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+}
+
+model Contest{
+  id Int @default(autoincrement()) @id
+  name String
+  date DateTime
+  tests Test[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 model Test{
   id Int @default(autoincrement()) @id
   name String
-  time Float
-  date DateTime
+  time Float?
+  date DateTime?
   qualifications Qualification[]
   grade Grade @relation(fields: [gradeId], references: [id])
   gradeId Int
+  contest Contest @relation(fields:[contestId], references: [id])
+  contestId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 model Qualification{
@@ -73,5 +94,7 @@ model Qualification{
   studentId Int
   test Test @relation(fields: [testId], references: [id])
   testId Int
-  
+  time Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }

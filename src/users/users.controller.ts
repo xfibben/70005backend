@@ -22,10 +22,17 @@ export class UsersController {
         return this.usersService.createUser(user);
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Put('/:username')
     editUser(@Param('username') username:string, @Body() user:any){
         user.username = username;
         return this.usersService.editUser(username ,user);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Delete('/:username')
+    deleteUser(@Param('username') username:string){
+        return this.usersService.deleteUser(username);
     }
 }
 
