@@ -11,7 +11,7 @@ import { UsersService } from 'src/users/users.service';
     UsersModule,
     JwtModule.register({
       secret: 'secretKey', // Usa una clave más segura y guárdala en variables de entorno
-      signOptions: { expiresIn: '60s' },
+      //signOptions: { expiresIn: '60s' }, // El token expira en 60 segundos
     }),
   ],
     providers: [AuthService, JwtStrategy, UsersService],
