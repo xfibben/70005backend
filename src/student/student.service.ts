@@ -9,9 +9,23 @@ export class StudentService {
         this.prisma = new PrismaClient();
     };
 
-    async getStudents(){
-        return await this.prisma.student.findMany();
-    };
+    async getStudents() {
+  return await this.prisma.student.findMany({
+    include: {
+      school: {
+        select: {
+          name: true // Asume que el modelo de 'school' tiene un campo 'name'
+        }
+      },
+      grade: {
+        select: {
+          grade: true,
+          level: true // Asume que el modelo de 'grade' tiene un campo 'name'
+        }
+      }
+    }
+  });
+};
 
     async getStudent(id:number){
         try{

@@ -7,16 +7,21 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() body: any, @Res() response: Response) {
-    const user = await this.authService.validateUser(body.username, body.password);
-    console.log(user);
-    if (!user) {
-      return response.status(HttpStatus.UNAUTHORIZED).json({ message: 'Unauthorized xd' });
-    }
-    const token = await this.authService.login(user);
-    response.cookie('jwt', token.access_token, { httpOnly: true });
-    return response.status(HttpStatus.OK).json({ message: 'Login successful' });
+async login(@Body() body: any, @Res() response: Response) {
+  const user = await this.authService.validateUser(body.username, body.password);
+  console.log(user);
+  if (!user) {
+    return response.status(HttpStatus.UNAUTHORIZED).json({ message: 'Unauthorized' });
   }
+  const token = await this.authService.login(user);
+  // Se sigue enviando el token como una cookie httpOnly para seguridad
+  response.cookie('jwt', token.access_token, { httpOnly: true });
+  // Además, se envía el token en el cuerpo de la respuesta para que el cliente pueda usarlo
+  return response.status(HttpStatus.OK).json({ 
+    message: 'Login successful', 
+    access_token: token.access_token 
+  });
+}
 
   @Post('register')
   async register(@Body() body: any) {
