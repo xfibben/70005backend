@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Post, Put, Delete, Param } from '@nestjs/common';
+import { Controller, UseGuards, Get, Post, Put, Delete, Param, ParseIntPipe } from '@nestjs/common';
 import { QualificationService } from './qualification.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -14,7 +14,7 @@ export class QualificationController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('/:id')
-    getQualification(@Param() id:number){
+    getQualification(@Param('id', ParseIntPipe) id:number){
         return this.qualificationService.getQualification(id);
     }
 
@@ -26,13 +26,13 @@ export class QualificationController {
 
     @UseGuards(AuthGuard('jwt'))
     @Put('/:id')
-    editQualification(@Param() id:number, @Param() qualification){
+    editQualification(@Param('id', ParseIntPipe) id:number, @Param() qualification){
         return this.qualificationService.editQualification(id, qualification);
     }
 
     @UseGuards(AuthGuard('jwt'))
     @Delete('/:id')
-    deleteQualification(@Param() id:number){
+    deleteQualification(@Param('id', ParseIntPipe) id:number){
         return this.qualificationService.deleteQualification(id);
     }
 }

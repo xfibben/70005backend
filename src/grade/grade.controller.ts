@@ -1,4 +1,4 @@
-import { Controller, Get,Post, Put, Delete,Param, UseGuards , Body} from '@nestjs/common';
+import { Controller, Get,Post, Put, Delete,Param, UseGuards , Body, ParseIntPipe} from '@nestjs/common';
 import { GradeService } from './grade.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -14,7 +14,7 @@ export class GradeController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('/:id')
-    getGrade(@Param()id:number){
+    getGrade(@Param('id', ParseIntPipe) id:number){
         return this.gradeService.getGrade(id);
     };
 
@@ -26,13 +26,13 @@ export class GradeController {
 
     @UseGuards(AuthGuard('jwt'))
     @Put('/:id')
-    editGrade(@Param() id:number, @Body() grade:any){
+    editGrade(@Param('id', ParseIntPipe) id:number, @Body() grade:any){
         return this.gradeService.editGrade(id, grade);
     };
 
     @UseGuards(AuthGuard('jwt'))
     @Delete('/:id')
-    deleteGrade(@Param() id:number){
+    deleteGrade(@Param('id', ParseIntPipe) id:number){
         return this.gradeService.deleteGrade(id);
     };
 

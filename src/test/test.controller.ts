@@ -1,4 +1,4 @@
-import { Controller , Get, Post, Put, Delete, UseGuards, Param, Body } from '@nestjs/common';
+import { Controller , Get, Post, Put, Delete, UseGuards, Param, Body, ParseIntPipe } from '@nestjs/common';
 import { TestService } from './test.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateTestDto, EditTestDto } from './dto/test.dto';
@@ -15,7 +15,7 @@ export class TestController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('/:id')
-    getTest(@Param() id:number){
+    getTest(@Param('id', ParseIntPipe) id:number){
         return this.testService.getTest(id);
     }
 
@@ -27,13 +27,13 @@ export class TestController {
 
     @UseGuards(AuthGuard('jwt'))
     @Put('/:id')
-    editTest(@Param() id:number, @Body() test:EditTestDto){
+    editTest(@Param('id', ParseIntPipe) id:number, @Body() test:EditTestDto){
         return this.testService.editTest(id, test);
     }
 
     @UseGuards(AuthGuard('jwt'))
     @Delete('/:id')
-    deleteTest(@Param() id:number){
+    deleteTest(@Param('id', ParseIntPipe) id:number){
         return this.testService.deleteTest(id);
     }
 

@@ -1,4 +1,4 @@
-import { Controller ,Get, Post, Put, Delete, Body, Param, UseGuards,} from '@nestjs/common';
+import { Controller ,Get, Post, Put, Delete, Body, Param, UseGuards, ParseIntPipe,} from '@nestjs/common';
 import { ContestService } from './contest.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -15,7 +15,7 @@ export class ContestController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('/:id')
-    getContest(@Param('id') id:number){
+    getContest(@Param('id', ParseIntPipe) id:number){
         return this.contesService.getContest(id);
     }
 
@@ -27,13 +27,13 @@ export class ContestController {
 
     @UseGuards(AuthGuard('jwt'))
     @Put('/:id')
-    editContest(@Param('id') id:number, @Body() contest:any){
+    editContest(@Param('id', ParseIntPipe) id:number, @Body() contest:any){
         return this.contesService.editContest(id, contest);
     }
 
     @UseGuards(AuthGuard('jwt'))
     @Delete('/:id')
-    deleteContest(@Param('id') id:number){
+    deleteContest(@Param('id', ParseIntPipe) id:number){
         return this.contesService.deleteContest(id);
     }
 

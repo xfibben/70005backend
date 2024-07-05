@@ -1,4 +1,4 @@
-import { Controller,UseGuards, Get, Post, Put, Delete, Body, Param,} from '@nestjs/common';
+import { Controller,UseGuards, Get, Post, Put, Delete, Body, Param, ParseIntPipe,} from '@nestjs/common';
 import { SchoolService } from './school.service';
 import { CreateSchoolDto, EditSchoolDto } from './dto/school.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -15,7 +15,7 @@ export class SchoolController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('/:id')
-    getSchool(@Param() id:number){
+    getSchool(@Param('id', ParseIntPipe) id:number){
         return this.schoolService.getSchool(id);
     }
 
@@ -27,13 +27,13 @@ export class SchoolController {
 
     @UseGuards(AuthGuard('jwt'))
     @Delete('/:id')
-    deleteSchool(@Param('id')id:number){
+    deleteSchool(@Param('id', ParseIntPipe)id:number){
         return this.schoolService.deleteSchool(id);
     }
 
     @UseGuards(AuthGuard('jwt'))
     @Put('/:id')
-    updateSchool(@Param()id:number, @Body() school:EditSchoolDto){
+    updateSchool(@Param('id', ParseIntPipe)id:number, @Body() school:EditSchoolDto){
         return this.schoolService.updateSchool(id, school);
     }
 
