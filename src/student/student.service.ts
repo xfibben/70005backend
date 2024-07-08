@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpCode, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { CreateStudentDto, EditStudentDto } from './dto/student.dto';
 
@@ -38,13 +38,17 @@ export class StudentService {
     };
 
     async createStudent(student:CreateStudentDto){
-        const verifyStudent =  await this.prisma.student.findFirst({where:{dni:student.dni}});
+        try{
+            const verifyStudent =  await this.prisma.student.findFirst({where:{dni:student.dni}});
         if (!verifyStudent){
             const newStudent = await this.prisma.student.create({data:student})
             return newStudent
         }else{
-            return 'No se puede duplicar el estudiante'
+            throw new HttpException(`Ya existe un estudiante con el numero de DNI:${student.dni}`, HttpStatus.CONFLICT);
         };
+        }catch(error){
+            throw error;
+        }
     };
 
     async editStudent(id:number ,student:EditStudentDto){
