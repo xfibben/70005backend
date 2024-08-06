@@ -1,7 +1,7 @@
 export interface CreateTestDto{
     name : string
     time? : number
-    date : Date
+    date : string
     gradeId : number
     contestId : number
 }
@@ -9,7 +9,7 @@ export interface CreateTestDto{
 export interface EditTestDto{
     name? : string
     time? : number
-    date? : Date
+    date? : string
     gradeId? : number
     contestId? : number
 }

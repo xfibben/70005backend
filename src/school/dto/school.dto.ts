@@ -10,7 +10,7 @@ export interface CreateSchoolDto{
 
 export interface EditSchoolDto{
     name?:string
-    address?:string
+    addressn?:string
     email?:string
     phone?:string
     type?:type
