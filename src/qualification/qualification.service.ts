@@ -9,14 +9,29 @@ export class QualificationService {
 
     constructor(){this.prisma = new PrismaClient();}
 
-    async getQualifications(){
-        try{
-            const qualifications = await this.prisma.qualification.findMany();
-            return qualifications;
-        }catch(error){
-            throw error;
-        }
-    };
+    async getQualifications() {
+    try {
+        const qualifications = await this.prisma.qualification.findMany({
+            include: {
+                student: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                test: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        });
+        return qualifications;
+    } catch (error) {
+        throw error;
+    }
+}
 
     async getQualification(id:number){
         try {
