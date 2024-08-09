@@ -12,7 +12,17 @@ export class TestService {
 
     async getTests(){
         try{
-            const tests = await this.prisma.test.findMany();
+            const tests = await this.prisma.test.findMany(
+                {
+                    include:{
+                        contest:{
+                            select:{
+                                name:true
+                            }
+                        }
+                    }
+                }
+            );
             return tests;
         }catch(error){
             throw error;

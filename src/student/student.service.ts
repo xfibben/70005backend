@@ -19,7 +19,6 @@ export class StudentService {
       },
       grade: {
         select: {
-          grade: true,
           level: true // Asume que el modelo de 'grade' tiene un campo 'name'
         }
       }

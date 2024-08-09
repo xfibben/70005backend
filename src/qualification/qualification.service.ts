@@ -10,28 +10,55 @@ export class QualificationService {
     constructor(){this.prisma = new PrismaClient();}
 
     async getQualifications() {
-    try {
-        const qualifications = await this.prisma.qualification.findMany({
-            include: {
-                student: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                },
-                test: {
-                    select: {
-                        id: true,
-                        name: true
+        try {
+            const qualifications = await this.prisma.qualification.findMany({
+                include: {
+                    student: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    test: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
                     }
                 }
-            }
-        });
-        return qualifications;
-    } catch (error) {
-        throw error;
+            });
+            return qualifications;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    async getQualificationsByTest(testId:number){ {
+        try {
+            const qualifications = await this.prisma.qualification.findMany({
+                include: {
+                    student: {
+                        select: {
+                            id: true,
+                            name: true,
+                            dni: true,
+                            lastName: true
+                        }
+                    },
+                    test: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                },where:{testId}
+            });
+            return qualifications;
+        } catch (error) {
+            throw error;
+        }
+    };
     }
-}
 
     async getQualification(id:number){
         try {

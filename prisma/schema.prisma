@@ -14,9 +14,12 @@ datasource db {
 }
 
 enum level {
-  Inicial
-  Primaria
-  Secundaria
+  Primero
+  Segundo
+  Tercero
+  Cuarto
+  Quinto
+  Sexto
 }
 
 enum type {
@@ -51,7 +54,6 @@ model Student{
 
 model Grade{
   id Int @default(autoincrement()) @id
-  grade Float
   level level
   students Student[]
   Test Test[]

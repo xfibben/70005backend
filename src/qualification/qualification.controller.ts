@@ -13,6 +13,12 @@ export class QualificationController {
     }
 
     @UseGuards(AuthGuard('jwt'))
+    @Get('/test/:testId')
+    getQualificationsByTest(@Param('testId', ParseIntPipe) testId:number){
+        return this.qualificationService.getQualificationsByTest(testId);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
     @Get('/:id')
     getQualification(@Param('id', ParseIntPipe) id:number){
         return this.qualificationService.getQualification(id);

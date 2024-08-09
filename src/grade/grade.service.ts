@@ -27,9 +27,9 @@ export class GradeService {
         }
     };
 
-    async createGrade(grade: CreateGradeDto){
+    async createGrade(level: CreateGradeDto){
         try{
-            const newGrade = await this.prisma.grade.create({data:grade});
+            const newGrade = await this.prisma.grade.create({data:level});
             return newGrade;
         }catch(error){
             throw error;
