@@ -14,6 +14,12 @@ datasource db {
 }
 
 enum level {
+  Inicial
+  Primaria
+  Secundaria
+}
+
+enum grade {
   Primero
   Segundo
   Tercero
@@ -47,7 +53,21 @@ model Student{
   schoolId Int
   grade Grade? @relation(fields: [gradeId], references: [id])
   gradeId Int
+  owned Boolean @default(false)
   qualifications Qualification[]
+  inscriptions Inscription[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+}
+
+model Inscription{
+  id Int @default(autoincrement()) @id
+  ticket String
+  quantity Int
+  student Student @relation(fields: [studentId], references: [id])
+  studentId Int
+  contest Contest? @relation(fields: [contestId], references: [id])
+  contestId Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
 }
@@ -55,7 +75,9 @@ model Student{
 model Grade{
   id Int @default(autoincrement()) @id
   level level
+  grade grade
   students Student[]
+  school School[]
   Test Test[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
@@ -68,6 +90,8 @@ model School{
   phone String?
   email String?
   type type?
+  grade Grade? @relation(fields: [gradeId], references: [id])
+  gradeId Int
   students Student[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
@@ -78,6 +102,7 @@ model Contest{
   name String
   date String
   tests Test[]
+  inscriptions Inscription[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
 }
@@ -89,7 +114,7 @@ model Test{
   date String?
   qualifications Qualification[]
   grade Grade @relation(fields: [gradeId], references: [id])
-  gradeId Int
+  gradeId Int @unique
   contest Contest @relation(fields:[contestId], references: [id])
   contestId Int
   createdAt DateTime @default(now())

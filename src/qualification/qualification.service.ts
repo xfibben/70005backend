@@ -69,14 +69,25 @@ export class QualificationService {
         }
     };
 
-    async createQualification(qualification:CreateQualificationDto){
+    async createQualification(qualification: CreateQualificationDto) {
         try {
-            const newQualification = await this.prisma.qualification.create({data:qualification})
+            const isQualification = await this.prisma.qualification.findFirst({
+                where: { studentId: qualification.studentId },
+            });
+
+            if (isQualification) {
+                throw new HttpException('Qualification for this student already exists.',HttpStatus.CONFLICT);
+            }
+
+            const newQualification = await this.prisma.qualification.create({
+                data: qualification,
+            });
+
             return newQualification;
         } catch (error) {
             throw error;
         }
-    };
+    }
 
     async editQualification(id:number, qualification:EditQualificationDto){
         try {

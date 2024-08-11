@@ -6,6 +6,7 @@ export interface CreateSchoolDto{
     email?:string
     phone?:string
     type:type
+    gradeId:number
 }
 
 export interface EditSchoolDto{
@@ -14,4 +15,5 @@ export interface EditSchoolDto{
     email?:string
     phone?:string
     type?:type
+    gradeId?:number
 }

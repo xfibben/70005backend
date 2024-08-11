@@ -4,6 +4,7 @@ export interface CreateStudentDto{
     email: string
     dni: string
     schoolId: number
+    owned:boolean
     gradeId: number
 }
 
@@ -13,5 +14,6 @@ export interface EditStudentDto{
     email?: string
     dni?:string
     schoolId?: number
+    owned?:boolean
     gradeId?: number
 }
