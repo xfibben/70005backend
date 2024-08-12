@@ -8,9 +8,10 @@ import { ContestModule } from './contest/contest.module';
 import { QualificationService } from './qualification/qualification.service';
 import { QualificationModule } from './qualification/qualification.module';
 import { GradeModule } from './grade/grade.module';
+import { InscriptionModule } from './inscription/inscription.module';
 
 @Module({
-  imports: [UsersModule, StudentModule, SchoolModule, AuthModule, TestModule, ContestModule, QualificationModule, GradeModule],
+  imports: [UsersModule, StudentModule, SchoolModule, AuthModule, TestModule, ContestModule, QualificationModule, GradeModule, InscriptionModule],
   controllers: [],
   providers: [QualificationService],
 })

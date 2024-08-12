@@ -47,6 +47,7 @@ model Student{
   id Int @default(autoincrement()) @id
   name String
   lastName String
+  secondName String
   email String?
   dni String @unique
   school School @relation(fields: [schoolId], references: [id])

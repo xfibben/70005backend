@@ -1,6 +1,7 @@
 export interface CreateStudentDto{
     name: string
     lastName: string
+    secondName: string
     email: string
     dni: string
     schoolId: number
@@ -11,6 +12,7 @@ export interface CreateStudentDto{
 export interface EditStudentDto{
     name?: string
     lastName?: string
+    secondName? : string
     email?: string
     dni?:string
     schoolId?: number

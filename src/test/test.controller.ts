@@ -37,4 +37,10 @@ export class TestController {
         return this.testService.deleteTest(id);
     }
 
+    @UseGuards(AuthGuard('jwt'))
+    @Get('/exel/:id')
+    exportRanking(@Param('id', ParseIntPipe) id:number){
+        return this.testService.exportRanking(id);
+    }
+
 }
