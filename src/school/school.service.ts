@@ -11,7 +11,11 @@ export class SchoolService {
 
     async getSchools(){
         try{
-            return await this.prisma.school.findMany()
+            return await this.prisma.school.findMany({
+                orderBy: {
+                name: 'asc', // Orden ascendente por el campo 'name'
+            },
+            })
         }catch(error){
             throw error;
         }

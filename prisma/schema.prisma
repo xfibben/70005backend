@@ -14,23 +14,30 @@ datasource db {
 }
 
 enum level {
-  Inicial
-  Primaria
-  Secundaria
+  INICIAL
+  PRIMARIA
+  SECUNDARIA
 }
 
 enum grade {
-  Primero
-  Segundo
-  Tercero
-  Cuarto
-  Quinto
-  Sexto
+  INICIAL
+  PRIMERO
+  SEGUNDO
+  TERCERO
+  CUARTO
+  QUINTO
+  SEXTO
 }
 
 enum type {
-  Privada
-  Publica
+  PRIVADA
+  PUBLICA
+}
+
+enum mode {
+  INDEPENDIENTE
+  DELEGACION
+  INTERNO
 }
 
 model User{
@@ -54,7 +61,7 @@ model Student{
   schoolId Int
   grade Grade? @relation(fields: [gradeId], references: [id])
   gradeId Int
-  owned Boolean @default(false)
+  mode mode?
   qualifications Qualification[]
   inscriptions Inscription[]
   createdAt DateTime @default(now())
@@ -78,7 +85,6 @@ model Grade{
   level level
   grade grade
   students Student[]
-  school School[]
   Test Test[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
@@ -91,8 +97,6 @@ model School{
   phone String?
   email String?
   type type?
-  grade Grade? @relation(fields: [gradeId], references: [id])
-  gradeId Int
   students Student[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())

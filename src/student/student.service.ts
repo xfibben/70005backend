@@ -51,17 +51,30 @@ export class StudentService {
         }
     };
 
-    async editStudent(id:number ,student:EditStudentDto){
-        try{
+    async editStudent(id: number, student: EditStudentDto) {
+        try {
+            const verifyStudent = await this.prisma.student.findFirst({
+                where: {
+                    dni: student.dni,
+                    NOT: { id }  // Excluir al propio estudiante que está siendo editado
+                }
+            });
+    
+            if (verifyStudent) {
+                throw new HttpException(`Ya existe un estudiante con el número de DNI: ${student.dni}`, HttpStatus.CONFLICT);
+            }
+    
             const studentFound = await this.prisma.student.update({
-                where:{id},
-                data:student
-            })
+                where: { id },
+                data: student
+            });
+    
             return studentFound;
-        }catch(error){
+        } catch (error) {
             throw error;
         }
     }
+
 
     async deleteStudent(id:number){
         try{

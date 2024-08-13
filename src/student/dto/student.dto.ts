@@ -1,3 +1,5 @@
+import { mode } from "@prisma/client"
+
 export interface CreateStudentDto{
     name: string
     lastName: string
@@ -5,7 +7,7 @@ export interface CreateStudentDto{
     email: string
     dni: string
     schoolId: number
-    owned:boolean
+    mode:mode
     gradeId: number
 }
 
@@ -16,6 +18,6 @@ export interface EditStudentDto{
     email?: string
     dni?:string
     schoolId?: number
-    owned?:boolean
+    mode?:mode
     gradeId?: number
 }

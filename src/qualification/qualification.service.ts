@@ -53,7 +53,7 @@ export class QualificationService {
         }
     };
 
-    async getQualificationsByTest(testId:number){ {
+    async getQualificationsByTest(testId: number) {
         try {
             const qualifications = await this.prisma.qualification.findMany({
                 include: {
@@ -71,13 +71,30 @@ export class QualificationService {
                             name: true
                         }
                     }
-                },where:{testId}
+                },
+                where: { testId },
+                orderBy: [
+                    {
+                        student: {
+                            lastName: 'asc'
+                        }
+                    },
+                    {
+                        student: {
+                            secondName: 'asc'
+                        }
+                    },
+                    {
+                        student: {
+                            name: 'asc'
+                        }
+                    }
+                ]
             });
             return qualifications;
         } catch (error) {
             throw error;
         }
-    };
     }
 
     async getQualification(id:number){
@@ -92,19 +109,32 @@ export class QualificationService {
     async createQualification(qualification: CreateQualificationDto) {
         try {
             const isQualification = await this.prisma.qualification.findFirst({
-                where: { studentId: qualification.studentId },
+                where: { studentId: qualification.studentId, testId: qualification.testId },
             });
 
             if (isQualification) {
-                throw new HttpException('Qualification for this student already exists.',HttpStatus.CONFLICT);
+                throw new HttpException('Qualification for this student already exists.', HttpStatus.CONFLICT);
             }
+
+            // Obtener el `time` del `Test` relacionado
+            const relatedTest = await this.prisma.test.findUnique({
+                where: { id: qualification.testId },
+                select: { time: true },
+            });
+
+            if (!relatedTest) {
+                throw new HttpException('Related test not found.', HttpStatus.NOT_FOUND);
+            }
+
+            // Asegurar que `startingTime` sea igual al `time` del `Test`
+            qualification.startingTime = relatedTest.time;
 
             const duration = this.calculateDuration(qualification.startingTime, qualification.endingTime);
 
             const newQualification = await this.prisma.qualification.create({
                 data: {
                     ...qualification,
-                    time:duration
+                    time: duration,
                 },
             });
 
@@ -113,6 +143,7 @@ export class QualificationService {
             throw error;
         }
     }
+
 
     async editQualification(id:number, qualification:EditQualificationDto){
         try {
