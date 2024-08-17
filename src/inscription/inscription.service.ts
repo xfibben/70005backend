@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable ,HttpException, HttpStatus} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { CreateInscriptionDto, EditInscriptionDto } from './dto/inscription.dto';
 
@@ -27,11 +27,24 @@ export class InscriptionService {
         }
     }
 
-    async createInscription(inscription: CreateInscriptionDto){
-        try{
-            const newInscription = await this.prisma.inscription.create({data:inscription})
+    async createInscription(inscription: CreateInscriptionDto) {
+        try {
+            // Verificar si ya existe una inscripción con el mismo studentId y contestId
+            const existingInscription = await this.prisma.inscription.findFirst({
+                where: {
+                    studentId: inscription.studentId,
+                    testId: inscription.testId,
+                },
+            });
+
+            if (existingInscription && existingInscription.studentId === inscription.studentId && existingInscription.testId === inscription.testId) {
+                throw new HttpException('El estudiante ya ha sido inscrito a esta Prueba', HttpStatus.CONFLICT);
+            }
+
+            // Crear la nueva inscripción si no existe una duplicada
+            const newInscription = await this.prisma.inscription.create({ data: inscription });
             return newInscription;
-        }catch(error){
+        } catch (error) {
             throw error;
         }
     }

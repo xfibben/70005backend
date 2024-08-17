@@ -70,19 +70,17 @@ export class TestService {
     };
 
     async exportRanking(id: number) {
-    try {
-        const result = await this.prisma.$queryRaw`
-        SELECT s."name", s."lastName", s."secondName", q."score", q."time"
-        FROM "Test" t
-        LEFT JOIN "Qualification" q ON t.id = q."testId"
-        LEFT JOIN "Student" s ON q."studentId" = s.id
-        WHERE t.id = ${id}
-        ORDER BY q.score DESC, q.time ASC;`;
-        return result;
-    } catch (error) {
-        throw error;
+        try {
+            const result = await this.prisma.$queryRaw`
+            SELECT s."lastName", s."secondName",  s."name", q."score", q."time"
+            FROM "Test" t
+            LEFT JOIN "Qualification" q ON t.id = q."testId"
+            LEFT JOIN "Student" s ON q."studentId" = s.id
+            WHERE t.id = ${id}
+            ORDER BY q.score DESC, q.time ASC;`;
+            return result;
+        } catch (error) {
+            throw error;
+        }
     }
-}
-
-
 }
