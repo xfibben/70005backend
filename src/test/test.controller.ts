@@ -1,7 +1,9 @@
-import { Controller , Get, Post, Put, Delete, UseGuards, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller , Get, Post, Put, Delete, UseGuards, Param, Body,Res, ParseIntPipe } from '@nestjs/common';
 import { TestService } from './test.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateTestDto, EditTestDto } from './dto/test.dto';
+import { Response } from 'express';
+
 
 @Controller('test')
 export class TestController {
@@ -38,9 +40,9 @@ export class TestController {
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Get('/exel/:id')
-    exportRanking(@Param('id', ParseIntPipe) id:number){
-        return this.testService.exportRanking(id);
+    @Get('/excel/:id')
+    exportRanking(@Param('id', ParseIntPipe) id:number,@Res() res: Response){
+        return this.testService.exportRankingbyTest(id,res);
     }
 
 }
