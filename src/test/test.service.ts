@@ -74,30 +74,63 @@ export class TestService {
         }
     };
 
-    async deleteTest(id:number){
-        try{
-            const findedTest = await this.prisma.test.findFirst({where:{id}})
-            if (findedTest){
-                return await this.prisma.test.delete({where:{id}})
-            }else{
-                throw new HttpException("No se encontro una prueba con id ${id}", HttpStatus.NOT_FOUND)
+    async deleteTest(id: number) {
+        try {
+            const findedTest = await this.prisma.test.findFirst({ where: { id } });
+    
+            if (findedTest) {
+                // Eliminar las calificaciones asociadas a este test
+                await this.prisma.qualification.deleteMany({
+                    where: { testId: id },
+                });
+    
+                // Eliminar las inscripciones asociadas a este test
+                await this.prisma.inscription.deleteMany({
+                    where: { testId: id },
+                });
+    
+                // Ahora eliminar el test
+                return await this.prisma.test.delete({ where: { id } });
+            } else {
+                throw new HttpException(`No se encontró una prueba con id ${id}`, HttpStatus.NOT_FOUND);
             }
-        }catch(error){
+        } catch (error) {
             throw error;
         }
-    };
+    }
+
+
 
     async exportRankingbyTest(testId: number, res: Response) {
         try {
             const result: RankingResult[] = await this.prisma.$queryRaw<RankingResult[]>`
-                SELECT q."time", q."score", s."dni", s."lastName", s."secondName", s."name", q."score", q."time", g."level", g."grade", g.id as "gradeId", sc.name as "schoolName", s.mode, i.ticket, i.quantity 
+                SELECT DISTINCT
+                    q."time",
+                    q."score",
+                    s."dni",
+                    s."lastName",
+                    s."secondName",
+                    s."name",
+                    g."level",
+                    g."grade",
+                    g.id as "gradeId",
+                    sc.name as "schoolName",
+                    s.mode,
+                    COALESCE(i."ticket", '') as "ticket",
+                    COALESCE(i."quantity", 0) as "quantity"
                 FROM "Test" t
                 LEFT JOIN "Qualification" q ON t.id = q."testId"
                 LEFT JOIN "Student" s ON q."studentId" = s.id
                 LEFT JOIN "School" sc ON s."schoolId" = sc.id
                 LEFT JOIN "Grade" g ON g.id = t."gradeId"
                 LEFT JOIN "Contest" c ON t."contestId" = c.id
-                LEFT JOIN "Inscription" i ON i."testId" = t.id
+                LEFT JOIN (
+                    SELECT DISTINCT 
+                        i."studentId",
+                        i."ticket",
+                        i."quantity"
+                    FROM "Inscription" i
+                ) i ON i."studentId" = s.id
                 WHERE t.id = ${testId}
                 ORDER BY g.id ASC, q.score DESC, q.time ASC;`;
 

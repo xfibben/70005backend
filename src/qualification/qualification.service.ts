@@ -160,13 +160,36 @@ export class QualificationService {
         }
     }
 
-    async deleteQualification(id:number){
+    async deleteQualification(id: number) {
         try {
-            const deletedQualification = await this.prisma.qualification.delete({where:{id}});
+            // Primero, encuentra la calificación para obtener los IDs del estudiante y del test
+            const qualification = await this.prisma.qualification.findUnique({
+                where: { id },
+                select: {
+                    studentId: true,
+                    testId: true,
+                },
+            });
+    
+            if (!qualification) {
+                throw new Error('Calificación no encontrada');
+            }
+    
+            // Elimina la inscripción relacionada
+            await this.prisma.inscription.deleteMany({
+                where: {
+                    studentId: qualification.studentId,
+                    testId: qualification.testId,
+                },
+            });
+    
+            // Luego, elimina la calificación
+            const deletedQualification = await this.prisma.qualification.delete({ where: { id } });
             return deletedQualification;
         } catch (error) {
             throw error;
         }
-    };
+    }
+
 
 }

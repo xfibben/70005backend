@@ -46,6 +46,12 @@ export class ContestController {
     }
 
     @UseGuards(AuthGuard('jwt'))
+    @Get('/excel/name/:id')
+    exportRankingbyContestOrderByName(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+        return this.contestService.exportRankingbyContest(id, res);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
     @Get('/pdf/:id')
     exportRankingbyContestPDF(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
         return this.contestService.exportRankingbyContestPDF(id, res);
