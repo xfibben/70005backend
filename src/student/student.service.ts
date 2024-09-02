@@ -47,9 +47,6 @@ export class StudentService {
     async createStudent(student:CreateStudentDto){
         
         try{
-            if (!student.schoolId) {
-            throw new HttpException('Se debe llenar una Escuela', HttpStatus.BAD_REQUEST);
-        }
             if (!student.gradeId) {
                 throw new HttpException('Se debe llenar una Grado', HttpStatus.BAD_REQUEST);
             }
@@ -67,16 +64,7 @@ export class StudentService {
 
     async editStudent(id: number, student: EditStudentDto) {
         try {
-            const verifyStudent = await this.prisma.student.findFirst({
-                where: {
-                    dni: student.dni,
-                    NOT: { id }  // Excluir al propio estudiante que está siendo editado
-                }
-            });
-    
-            if (verifyStudent) {
-                throw new HttpException(`Ya existe un estudiante con el número de DNI: ${student.dni}`, HttpStatus.CONFLICT);
-            }
+            
     
             const studentFound = await this.prisma.student.update({
                 where: { id },

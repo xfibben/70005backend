@@ -57,7 +57,7 @@ model Student{
   lastName String
   secondName String
   email String?
-  dni String @unique
+  dni String?
   school School @relation(fields: [schoolId], references: [id])
   schoolId Int
   grade Grade? @relation(fields: [gradeId], references: [id])
