@@ -1,4 +1,6 @@
 import { mode } from "@prisma/client"
+import { IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export interface CreateStudentDto{
     name: string
@@ -20,4 +22,10 @@ export interface EditStudentDto{
     schoolId?: number
     mode?:mode
     gradeId?: number
+}
+
+export class UploadExcelDto {
+    @ApiProperty({ type: 'string', format: 'binary' })
+    @IsNotEmpty()
+    file: any;
 }

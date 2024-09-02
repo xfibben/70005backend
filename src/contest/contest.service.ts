@@ -4,6 +4,9 @@ import { CreateContestDto, EditContestDto } from './dto/contest.dto';
 import { Response } from 'express';
 import * as ExcelJS from 'exceljs';
 const PDFDocument = require('pdfkit'); // Importación como CommonJS
+import Table from 'pdfkit-table';
+
+
 import { HttpException,HttpStatus } from '@nestjs/common';
 
 
@@ -120,12 +123,12 @@ export class ContestService {
                     COALESCE(i."ticket", '') as "ticket",
                     COALESCE(i."quantity", 0) as "quantity"
                 FROM "Test" t
-                LEFT JOIN "Qualification" q ON t.id = q."testId"
-                LEFT JOIN "Student" s ON q."studentId" = s.id
-                LEFT JOIN "School" sc ON s."schoolId" = sc.id
-                LEFT JOIN "Grade" g ON g.id = t."gradeId"
-                LEFT JOIN "Contest" c ON t."contestId" = c.id
-                LEFT JOIN (
+                 JOIN "Qualification" q ON t.id = q."testId"
+                 JOIN "Student" s ON q."studentId" = s.id
+                 JOIN "School" sc ON s."schoolId" = sc.id
+                 JOIN "Grade" g ON g.id = t."gradeId"
+                 JOIN "Contest" c ON t."contestId" = c.id
+                 JOIN (
                     SELECT DISTINCT 
                         i."studentId",
                         i."ticket",
@@ -209,12 +212,12 @@ export class ContestService {
                     COALESCE(i."ticket", '') as "ticket",
                     COALESCE(i."quantity", 0) as "quantity"
                 FROM "Test" t
-                LEFT JOIN "Qualification" q ON t.id = q."testId"
-                LEFT JOIN "Student" s ON q."studentId" = s.id
-                LEFT JOIN "School" sc ON s."schoolId" = sc.id
-                LEFT JOIN "Grade" g ON g.id = t."gradeId"
-                LEFT JOIN "Contest" c ON t."contestId" = c.id
-                LEFT JOIN (
+                 JOIN "Qualification" q ON t.id = q."testId"
+                 JOIN "Student" s ON q."studentId" = s.id
+                 JOIN "School" sc ON s."schoolId" = sc.id
+                 JOIN "Grade" g ON g.id = t."gradeId"
+                 JOIN "Contest" c ON t."contestId" = c.id
+                 JOIN (
                     SELECT DISTINCT 
                         i."studentId",
                         i."ticket",
@@ -282,6 +285,12 @@ export class ContestService {
 
     async exportRankingbyContestPDF(id: number, res: Response) {
         try {
+            // Obtener el nombre del concurso
+            const contest = await this.prisma.contest.findUnique({
+                where: { id: id },
+                select: { name: true }
+            });
+
             const result: RankingResult[] = await this.prisma.$queryRaw<RankingResult[]>`
                 SELECT DISTINCT
                     q."time",
@@ -298,12 +307,12 @@ export class ContestService {
                     COALESCE(i."ticket", '') as "ticket",
                     COALESCE(i."quantity", 0) as "quantity"
                 FROM "Test" t
-                LEFT JOIN "Qualification" q ON t.id = q."testId"
-                LEFT JOIN "Student" s ON q."studentId" = s.id
-                LEFT JOIN "School" sc ON s."schoolId" = sc.id
-                LEFT JOIN "Grade" g ON g.id = t."gradeId"
-                LEFT JOIN "Contest" c ON t."contestId" = c.id
-                LEFT JOIN (
+                 JOIN "Qualification" q ON t.id = q."testId"
+                 JOIN "Student" s ON q."studentId" = s.id
+                 JOIN "School" sc ON s."schoolId" = sc.id
+                 JOIN "Grade" g ON g.id = t."gradeId"
+                 JOIN "Contest" c ON t."contestId" = c.id
+                 JOIN (
                     SELECT DISTINCT 
                         i."studentId",
                         i."ticket",
@@ -314,36 +323,100 @@ export class ContestService {
                 ORDER BY g.id ASC, q.score DESC, q.time ASC;`;
 
             const doc = new PDFDocument();
-            let orderNumber = 1;
+            const margin = 50;
+            const tableTop = 150; // Ajustado para dejar espacio para el título
+            const baseRowHeight = 15;
+            const rowsPerPage = 30;
+            const columnWidths = [30, 100, 100, 100, 100, 60, 60];
+            let currentY = tableTop;
 
-            // Encabezados
-            doc.fontSize(12).text('N', { width: 30, align: 'left' })
-                .moveUp().text('Apellido Paterno', { width: 100, align: 'left', continued: true })
-                .text('Apellido Materno', { width: 100, align: 'left', continued: true })
-                .text('Nombre', { width: 100, align: 'left', continued: true })
-                .text('Procedencia', { width: 100, align: 'left', continued: true })
-                .text('Puntaje', { width: 60, align: 'left', continued: true })
-                .text('Tiempo', { width: 60, align: 'left' });
-
+            // Título del documento
+            doc.fontSize(16).font('Helvetica-Bold').text(`Ranking - ${contest.name}`, { align: 'center' });
             doc.moveDown();
 
-            // Agregar filas al PDF
-            result.forEach((row) => {
-                doc.fontSize(10).text(orderNumber, { width: 30, align: 'left' })
-                    .moveUp().text(row.lastName, { width: 100, align: 'left', continued: true })
-                    .text(row.secondName, { width: 100, align: 'left', continued: true })
-                    .text(row.name, { width: 100, align: 'left', continued: true })
-                    .text(row.schoolName, { width: 100, align: 'left', continued: true })
-                    .text(row.score, { width: 60, align: 'left', continued: true })
-                    .text(row.time, { width: 60, align: 'left' });
+            // Función para calcular la altura necesaria para una fila en función del texto más largo en la fila
+            const calculateRowHeight = (row: string[]) => {
+                let maxHeight = baseRowHeight;
+                doc.fontSize(8); // Reducimos el tamaño de la fuente para evitar saltos de línea innecesarios
+                row.forEach((text, index) => {
+                    const textHeight = doc.heightOfString(text, { width: columnWidths[index] - 10, align: 'left' });
+                    maxHeight = Math.max(maxHeight, textHeight + 10);
+                });
+                return maxHeight;
+            };
 
-                orderNumber += 1;
-                doc.moveDown();
+            // Función para dibujar la tabla con bordes y ajustar el tamaño de la fila según el contenido
+            const drawTableRow = (row: string[], y: number, rowHeight: number) => {
+                let x = margin;
+                doc.rect(x, y, columnWidths[0], rowHeight).stroke();
+                doc.text(row[0], x + 5, y + 5, { width: columnWidths[0] - 10, align: 'left' });
+
+                x += columnWidths[0];
+                doc.rect(x, y, columnWidths[1], rowHeight).stroke();
+                doc.text(row[1], x + 5, y + 5, { width: columnWidths[1] - 10, align: 'left' });
+
+                x += columnWidths[1];
+                doc.rect(x, y, columnWidths[2], rowHeight).stroke();
+                doc.text(row[2], x + 5, y + 5, { width: columnWidths[2] - 10, align: 'left' });
+
+                x += columnWidths[2];
+                doc.rect(x, y, columnWidths[3], rowHeight).stroke();
+                doc.text(row[3], x + 5, y + 5, { width: columnWidths[3] - 10, align: 'left' });
+
+                x += columnWidths[3];
+                doc.rect(x, y, columnWidths[4], rowHeight).stroke();
+                doc.text(row[4], x + 5, y + 5, { width: columnWidths[4] - 10, align: 'left' });
+
+                x += columnWidths[4];
+                doc.rect(x, y, columnWidths[5], rowHeight).stroke();
+                doc.text(row[5], x + 5, y + 5, { width: columnWidths[5] - 10, align: 'left' });
+
+                x += columnWidths[5];
+                doc.rect(x, y, columnWidths[6], rowHeight).stroke();
+                doc.text(row[6], x + 5, y + 5, { width: columnWidths[6] - 10, align: 'left' });
+            };
+
+            // Dibujar encabezados
+            drawTableRow(['N', 'Apellido Paterno', 'Apellido Materno', 'Nombre', 'Procedencia', 'Puntaje', 'Tiempo'], currentY, baseRowHeight);
+
+            currentY += baseRowHeight;
+
+            // Dibujar filas y manejar paginación
+            result.forEach((row, index) => {
+                const rowHeight = calculateRowHeight([
+                    (index + 1).toString(),
+                    row.lastName,
+                    row.secondName,
+                    row.name,
+                    row.schoolName,
+                    row.score.toString(),
+                    row.time,
+                ]);
+
+                if (currentY + rowHeight > doc.page.height - margin) {
+                    doc.addPage();
+                    currentY = tableTop;
+                    // Redibujar encabezados en cada nueva página
+                    drawTableRow(['N', 'Apellido Paterno', 'Apellido Materno', 'Nombre', 'Procedencia', 'Puntaje', 'Tiempo'], currentY, baseRowHeight);
+                    currentY += baseRowHeight;
+                }
+
+                drawTableRow([
+                    (index + 1).toString(),
+                    row.lastName,
+                    row.secondName,
+                    row.name,
+                    row.schoolName,
+                    row.score.toString(),
+                    row.time,
+                ], currentY, rowHeight);
+
+                currentY += rowHeight;
             });
 
             // Exportar el archivo PDF
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', 'attachment; filename=ranking.pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=ranking-${contest.name}.pdf`);
             doc.pipe(res);
             doc.end();
         } catch (error) {
@@ -351,7 +424,9 @@ export class ContestService {
         }
     }
 
-
-
-
 }
+
+
+
+
+
