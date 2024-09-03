@@ -44,23 +44,28 @@ export class StudentService {
         }
     };
 
-    async createStudent(student:CreateStudentDto){
-        
-        try{
-            if (!student.gradeId) {
-                throw new HttpException('Se debe llenar una Grado', HttpStatus.BAD_REQUEST);
+    async createStudent(student: CreateStudentDto) {
+        try {
+            if (!student.gradeId || !student.schoolId) {
+                throw new HttpException('Se debe llenar un Grado y Escuela', HttpStatus.BAD_REQUEST);
             }
-            const verifyStudent =  await this.prisma.student.findFirst({where:{dni:student.dni}});
-            if (!verifyStudent){
-                const newStudent = await this.prisma.student.create({data:student})
-                return newStudent
-        }else{
-            throw new HttpException(`Ya existe un estudiante con el numero de DNI:${student.dni}`, HttpStatus.CONFLICT);
-        };
-        }catch(error){
+
+            const verifySchool = await this.prisma.school.findUnique({
+                where: { id: student.schoolId },
+            });
+
+            if (!verifySchool) {
+                throw new HttpException(`La escuela con ID ${student.schoolId} no existe`, HttpStatus.BAD_REQUEST);
+            }
+
+            const newStudent = await this.prisma.student.create({ data: student });
+            return newStudent;
+
+        } catch (error) {
             throw error;
         }
-    };
+    }
+
 
     async editStudent(id: number, student: EditStudentDto) {
         try {
