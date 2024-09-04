@@ -1,12 +1,19 @@
 import { HttpCode, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client'; // Import Prisma error types
+
 import { CreateStudentDto, EditStudentDto } from './dto/student.dto';
 import { CreateInscriptionDto } from '../inscription/dto/inscription.dto';
 import { CreateQualificationDto } from '../qualification/dto/qualification.dto';
 import { InscriptionService } from '../inscription/inscription.service';
 import { QualificationService } from '../qualification/qualification.service';
-//import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 import { create } from 'domain';
+import { Express } from 'express';
+import { Request } from 'express';
+import { Multer } from 'multer';
+
+
 
 
 @Injectable()
@@ -50,6 +57,7 @@ export class StudentService {
                 throw new HttpException('Se debe llenar un Grado y Escuela', HttpStatus.BAD_REQUEST);
             }
 
+            // Check if the school exists
             const verifySchool = await this.prisma.school.findUnique({
                 where: { id: student.schoolId },
             });
@@ -58,6 +66,16 @@ export class StudentService {
                 throw new HttpException(`La escuela con ID ${student.schoolId} no existe`, HttpStatus.BAD_REQUEST);
             }
 
+            // Check if a student with the same DNI already exists
+            const existingStudent = await this.prisma.student.findUnique({
+                where: { dni: student.dni },
+            });
+
+            if (existingStudent) {
+                throw new HttpException(`El DNI ${student.dni} ya está registrado para otro estudiante.`, HttpStatus.CONFLICT);
+            }
+
+            // Create the new student
             const newStudent = await this.prisma.student.create({ data: student });
             return newStudent;
 
@@ -65,6 +83,7 @@ export class StudentService {
             throw error;
         }
     }
+
 
 
     async editStudent(id: number, student: EditStudentDto) {
@@ -109,56 +128,109 @@ export class StudentService {
 }
 
 
-    //async createStudentsFromExcel(file: Express.Multer.File,createStudent:CreateStudentDto,createInscription:CreateInscriptionDto,createQualification:CreateQualificationDto,
-    //    inscriptionService:InscriptionService,qualificationService:QualificationService
-    //) {
-    //    try {
-    //        const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-    //        const sheetName = workbook.SheetNames[0];
-    //        const sheet = workbook.Sheets[sheetName];
-    //        const studentsData = XLSX.utils.sheet_to_json(sheet);
-//
-    //        const createdStudents = [];
-//
-    //        for (const studentData of studentsData) {
-    //            const createStudentDto = createStudent;
-    //            createStudentDto.name = studentData['Nombre'];
-    //            createStudentDto.lastName = studentData['Apellido'];
-    //            createStudentDto.secondName = studentData['Segundo Nombre'];
-    //            createStudentDto.dni = studentData['DNI'];
-    //            createStudentDto.email = studentData['Email'];
-    //            createStudentDto.schoolId = studentData['ID Escuela'];
-    //            createStudentDto.gradeId = studentData['ID Grado'];
-    //            createStudentDto.mode = studentData['Modo'];
-//
-    //            const student = await this.createStudent(createStudentDto);
-    //            createdStudents.push(student);
-//
-    //            if (studentData['Inscripción']) {
-    //                const createInscriptionDto = createInscription;
-    //                createInscriptionDto.studentId = student.id;
-    //                createInscriptionDto.testId = studentData['ID Prueba'];
-    //                createInscriptionDto.ticket = studentData['Ticket'];
-    //                createInscriptionDto.quantity = studentData['Cantidad'];
-    //                await this.inscriptionService.createInscription(createInscriptionDto);
-    //            }
-//
-    //            if (studentData['Calificación']) {
-    //                const createQualificationDto = createQualification;
-    //                createQualificationDto.studentId = student.id;
-    //                createQualificationDto.testId = studentData['ID Prueba'];
-    //                createQualificationDto.score = studentData['Puntaje'];
-    //                createQualificationDto.startingTime = studentData['Hora Inicio'];
-    //                createQualificationDto.endingTime = studentData['Hora Fin'];
-    //                await this.qualificationService.createQualification(createQualificationDto);
-    //            }
-    //        }
-//
-    //        return createdStudents;
-    //    } catch (error) {
-    //        throw new HttpException('Error al procesar el archivo Excel', HttpStatus.INTERNAL_SERVER_ERROR);
-    //    }
-    //}
+async createStudentsFromExcel(
+    file: Express.Multer.File,
+    gradeId: number,
+    schoolId: number,
+    testId: number,
+    createStudent: CreateStudentDto | null = null
+) {
+    try {
+        const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const studentsData = XLSX.utils.sheet_to_json(sheet);
+
+        const createdStudents = [];
+
+        // Start Prisma transaction to handle rollback on failure
+        await this.prisma.$transaction(async (prisma) => {
+            for (const studentData of studentsData) {
+                // If createStudent is null, create a new instance of CreateStudentDto
+                const createStudentDto: CreateStudentDto = createStudent ? { ...createStudent } : {} as CreateStudentDto;
+
+                try {
+                    // Set student data from Excel
+                    createStudentDto.name = studentData['NOMBRES'];
+                    createStudentDto.lastName = studentData['APELLIDO PATERNO'];
+                    createStudentDto.secondName = studentData['APELLIDO MATERNO'];
+                    createStudentDto.dni = studentData['N° DE DNI'] ? String(studentData['N° DE DNI']) : null;
+                    createStudentDto.email = studentData['Email'];
+                    createStudentDto.gradeId = gradeId;
+                    createStudentDto.schoolId = schoolId;
+                    createStudentDto.mode = 'INTERNO'; // Assuming a default mode
+
+                    // Check if a student with the same DNI already exists
+                    const existingStudent = await prisma.student.findUnique({
+                        where: { dni: createStudentDto.dni },
+                    });
+
+                    if (existingStudent) {
+                        throw new HttpException(
+                            `El DNI ${createStudentDto.dni} ya está registrado para otro estudiante.`,
+                            HttpStatus.CONFLICT
+                        );
+                    }
+
+                    // Create the student in the database
+                    const student = await prisma.student.create({ data: createStudentDto });
+                    createdStudents.push(student);
+
+                    // Create Qualification
+                    const createQualification: CreateQualificationDto = {
+                        studentId: student.id,
+                        testId: testId,
+                        score: null,
+                        time: null,
+                        startingTime: studentData['Hora Inicio'] || '',
+                        endingTime: studentData['Hora Fin'] || '',
+                    };
+                    await prisma.qualification.create({ data: createQualification });
+
+                    // Create Inscription
+                    const createInscriptionDto: CreateInscriptionDto = {
+                        studentId: student.id,
+                        testId: testId,
+                        ticket: studentData['TICKET'] ? String(studentData['Ticket']) : null,
+                        quantity: studentData['CANTIDAD'],
+                    };
+                    await prisma.inscription.create({ data: createInscriptionDto });
+
+                } catch (error) {
+                    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                        // Handle Prisma unique constraint violation error (e.g., for DNI)
+                        if (error.code === 'P2002') {
+                            throw new HttpException(
+                                `Error: El DNI ${createStudentDto.dni} ya está registrado para otro estudiante.`,
+                                HttpStatus.CONFLICT
+                            );
+                        }
+                    }
+                    // Catch any other errors and rollback
+                    throw new HttpException({
+                        message: `Error while processing student ${studentData['NOMBRES']} ${studentData['APELLIDO PATERNO']}`,
+                        details: error.message
+                    }, HttpStatus.BAD_REQUEST);
+                }
+            }
+        });
+
+        return createdStudents;
+
+    } catch (error) {
+        console.error('Error while processing Excel file:', error);
+
+        // Catch and throw the final error
+        throw new HttpException({
+            message: 'Error al procesar el archivo Excel. Se cancelaron todas las creaciones.',
+            details: error.response ? error.response.message : error.message
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+
+
+
 
 
 

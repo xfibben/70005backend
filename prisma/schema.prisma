@@ -57,7 +57,7 @@ model Student{
   lastName String
   secondName String
   email String?
-  dni String?
+  dni String? @unique
   school School @relation(fields: [schoolId], references: [id])
   schoolId Int
   grade Grade? @relation(fields: [gradeId], references: [id])
@@ -69,16 +69,17 @@ model Student{
   updatedAt DateTime @updatedAt @default(now())
 }
 
-model Inscription{
-  id Int @default(autoincrement()) @id
-  ticket String
-  quantity Int
-  student Student @relation(fields: [studentId], references: [id])
+
+model Inscription {
+  id        Int      @id @default(autoincrement())
+  ticket    String
+  quantity  Int
   studentId Int
-  test Test @relation(fields:[testId], references: [id])
-  testId Int
+  testId    Int
+  student   Student  @relation(fields: [studentId], references: [id])
+  test      Test     @relation(fields: [testId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Grade{
