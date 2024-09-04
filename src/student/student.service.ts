@@ -191,7 +191,7 @@ async createStudentsFromExcel(
                     const createInscriptionDto: CreateInscriptionDto = {
                         studentId: student.id,
                         testId: testId,
-                        ticket: studentData['TICKET'] ? String(studentData['Ticket']) : null,
+                        ticket: studentData['TICKET'] ? String(studentData['TICKET']) : null,
                         quantity: studentData['CANTIDAD'],
                     };
                     await prisma.inscription.create({ data: createInscriptionDto });
