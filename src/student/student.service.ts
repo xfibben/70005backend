@@ -142,6 +142,8 @@ async createStudentsFromExcel(
         const studentsData = XLSX.utils.sheet_to_json(sheet);
 
         const createdStudents = [];
+        const validModes = ['INDEPENDIENTE', 'DELEGACION', 'INTERNO', 'EXTERNO'];
+
 
         // Start Prisma transaction to handle rollback on failure
         await this.prisma.$transaction(async (prisma) => {
@@ -158,7 +160,8 @@ async createStudentsFromExcel(
                     createStudentDto.email = studentData['Email'];
                     createStudentDto.gradeId = gradeId;
                     createStudentDto.schoolId = schoolId;
-                    createStudentDto.mode = 'INTERNO'; // Assuming a default mode
+                    const modalidad = studentData['MODALIDAD'];
+                    createStudentDto.mode = validModes.includes(modalidad) ? modalidad : 'INTERNO';
 
                     // Check if a student with the same DNI already exists
                     const existingStudent = await prisma.student.findUnique({

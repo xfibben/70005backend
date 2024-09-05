@@ -212,12 +212,12 @@ export class ContestService {
                     COALESCE(i."ticket", '') as "ticket",
                     COALESCE(i."quantity", 0) as "quantity"
                 FROM "Test" t
-                 JOIN "Qualification" q ON t.id = q."testId"
-                 JOIN "Student" s ON q."studentId" = s.id
-                 JOIN "School" sc ON s."schoolId" = sc.id
-                 JOIN "Grade" g ON g.id = t."gradeId"
-                 JOIN "Contest" c ON t."contestId" = c.id
-                 JOIN (
+                 LEFT JOIN "Qualification" q ON t.id = q."testId"
+                 LEFT JOIN "Student" s ON q."studentId" = s.id
+                 LEFT JOIN "School" sc ON s."schoolId" = sc.id
+                 LEFT JOIN "Grade" g ON g.id = t."gradeId"
+                 LEFT JOIN "Contest" c ON t."contestId" = c.id
+                 LEFT JOIN (
                     SELECT DISTINCT 
                         i."studentId",
                         i."ticket",
@@ -307,12 +307,12 @@ export class ContestService {
                     COALESCE(i."ticket", '') as "ticket",
                     COALESCE(i."quantity", 0) as "quantity"
                 FROM "Test" t
-                 JOIN "Qualification" q ON t.id = q."testId"
-                 JOIN "Student" s ON q."studentId" = s.id
-                 JOIN "School" sc ON s."schoolId" = sc.id
-                 JOIN "Grade" g ON g.id = t."gradeId"
-                 JOIN "Contest" c ON t."contestId" = c.id
-                 JOIN (
+                 LEFT JOIN "Qualification" q ON t.id = q."testId"
+                 LEFT JOIN "Student" s ON q."studentId" = s.id
+                 LEFT JOIN "School" sc ON s."schoolId" = sc.id
+                 LEFT JOIN "Grade" g ON g.id = t."gradeId"
+                 LEFT JOIN "Contest" c ON t."contestId" = c.id
+                 LEFT JOIN (
                     SELECT DISTINCT 
                         i."studentId",
                         i."ticket",
